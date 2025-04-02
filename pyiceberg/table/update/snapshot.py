@@ -66,6 +66,7 @@ from pyiceberg.table.update import (
     AddSnapshotUpdate,
     AssertRefSnapshotId,
     RemoveSnapshotRefUpdate,
+    RemoveSnapshotsUpdate,
     SetSnapshotRefUpdate,
     TableRequirement,
     TableUpdate,
@@ -844,3 +845,112 @@ class ManageSnapshots(UpdateTableMetadata["ManageSnapshots"]):
             This for method chaining
         """
         return self._remove_ref_snapshot(ref_name=branch_name)
+
+
+class ExpireSnapshots(UpdateTableMetadata["ExpireSnapshots"]):
+    """
+    API for removing old snapshots from the table.
+    """
+
+    _updates: Tuple[TableUpdate, ...] = ()
+    _requirements: Tuple[TableRequirement, ...] = ()
+
+    def __init__(self, transaction: Transaction) -> None:
+        super().__init__(transaction)
+        self._transaction = transaction
+        self._ids_to_remove: Set[int] = set()
+
+
+    def _update_references_on_snapshot_removal(self, snapshot_id: int) -> ManageSnapshots:
+        """
+        Update the references when a snapshot is removed.
+        
+        Args:
+            snapshot_id: The snapshot ID to be removed.
+        
+        Returns:
+            This for method chaining.
+        """
+        snapshot_to_remove = self._transaction.table_metadata.snapshot_by_id(snapshot_id)
+        if not snapshot_to_remove:
+            raise ValueError(f"Snapshot with ID {snapshot_id} does not exist.")
+        
+        parent_snapshot_id = snapshot_to_remove.parent_snapshot_id
+        if not parent_snapshot_id:
+            raise ValueError(f"Snapshot with ID {snapshot_id} has no parent snapshot.")
+
+        # Update all references pointing to the snapshot to remove
+        for ref_name, snapshot_ref in self._transaction.table_metadata.refs.items():
+            if snapshot_ref.snapshot_id == snapshot_id:
+                # Update the reference to point to the parent snapshot
+                update, requirement =  self._transaction._set_ref_snapshot(
+                    snapshot_id=parent_snapshot_id,
+                    ref_name=ref_name,
+                    type=snapshot_ref.type,
+                    max_ref_age_ms=snapshot_ref.max_ref_age_ms,
+                    max_snapshot_age_ms=snapshot_ref.max_snapshot_age_ms,
+                    min_snapshots_to_keep=snapshot_ref.min_snapshots_to_keep,
+                )
+                self._updates += update
+                self._requirements += requirement
+
+        # Finally, remove the reference to the snapshot itself
+        self._transaction._table.manage_snapshots()._remove_ref_snapshot(snapshot_id=snapshot_id)
+
+        return self
+
+    def _commit(self) -> UpdatesAndRequirements:
+        """Apply the pending changes and commit."""
+        if not hasattr(self, "_transaction") or not self._transaction:
+            raise AttributeError("Transaction object is not properly initialized.")
+
+        if not self._ids_to_remove:
+            raise ValueError("No snapshot IDs marked for expiration.")
+    
+            
+
+        # Ensure current snapshots in refs are not marked for removal
+        # This check is necessary to prevent the accidental deletion of snapshots
+        # Validate that all IDs in self._ids_to_remove exist in the table's snapshots
+        current_snapshot_ids = {ref.snapshot_id: ref_name for ref_name, ref in self._transaction.table_metadata.refs.items()}
+        conflicting_ids = {snapshot_id: ref_name for snapshot_id, ref_name in current_snapshot_ids.items() if snapshot_id in self._ids_to_remove}
+        if conflicting_ids:
+            raise ValueError(
+                f"Cannot expire snapshot IDs {list(conflicting_ids.keys())} as they are currently referenced by table refs: {list(conflicting_ids.values())}."
+            )
+        conflicting_ids = self._ids_to_remove.intersection(current_snapshot_ids)
+        # references are critical for maintaining the integrity of the table's state.
+        current_snapshot_ids = {ref.snapshot_id for ref in self._transaction.table_metadata.refs.values()}
+ 
+        conflicting_ids = self._ids_to_remove.intersection(current_snapshot_ids)
+        if conflicting_ids:
+            raise ValueError(f"Cannot expire snapshot IDs {conflicting_ids} as they are currently referenced by table refs.")
+
+        updates = (RemoveSnapshotsUpdate(snapshot_ids=list(self._ids_to_remove)),)
+
+        # Ensure refs haven't changed (snapshot ID consistency check)
+        requirements = tuple(
+            AssertRefSnapshotId(snapshot_id=ref.snapshot_id, ref=ref_name)
+            for ref_name, ref in self._transaction.table_metadata.refs.items()
+        )
+        self._updates += updates
+        self._requirements += requirements
+        return self
+
+    def expire_snapshot_id(self, snapshot_id_to_expire: int) -> ExpireSnapshots:
+        """Mark a specific snapshot ID for expiration."""
+        snapshot = self._transaction._table.snapshot_by_id(snapshot_id_to_expire)
+        if snapshot:
+            self._ids_to_remove.add(snapshot_id_to_expire)
+        else:
+            raise ValueError(f"Snapshot ID {snapshot_id_to_expire} does not exist.")
+        return self
+
+    def expire_older_than(self, timestamp_ms: int) -> ExpireSnapshots:
+        """Mark snapshots older than the given timestamp for expiration."""
+        for snapshot in self._transaction.table_metadata.snapshots:
+            if snapshot.timestamp_ms < timestamp_ms:
+                self._ids_to_remove.add(snapshot.snapshot_id)
+        return self
+
+
