@@ -1,0 +1,5 @@
+def _calculate_optimal_vortex_batch_size(table: pa.Table) -> int: - size=0.2 KiB, count=3
+self.traces = _Traces(traces) - size=0.3 KiB, count=4
+return Snapshot(traces, traceback_limit) - size=0.3 KiB, count=3
+with self.instr.profile_block("vortex.write.batch_size_calc", {"rows": num_rows}): - size=0.2 KiB, count=4
+traces = _get_traces() - size=63.5 KiB, count=1340

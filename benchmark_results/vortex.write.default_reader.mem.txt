@@ -1,0 +1,5 @@
+return (abs(self.size_diff), self.size, - size=0.3 KiB, count=4
+self._frames = tuple(reversed(frames)) - size=0.0 KiB, count=0
+traces = _get_traces() - size=14.2 KiB, count=297
+parquet_format = ds.ParquetFileFormat(**read_options) - size=0.0 KiB, count=0
+return Snapshot(traces, traceback_limit) - size=0.6 KiB, count=4

@@ -1,0 +1,5 @@
+traces = _get_traces() - size=56.2 KiB, count=1193
+self._frames = tuple(reversed(frames)) - size=35.1 KiB, count=748
+return Array.from_arrow(obj) - size=5.5 KiB, count=106
+return compile(source, filename, mode, flags, - size=0.8 KiB, count=13
+with self.instr.profile_block("vortex.write.streaming", {"rows": num_rows}): - size=0.1 KiB, count=2

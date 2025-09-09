@@ -1,0 +1,5 @@
+return Snapshot(traces, traceback_limit) - size=0.5 KiB, count=3
+self.traces = _Traces(traces) - size=0.5 KiB, count=3
+with self.instr.profile_block("vortex.read.read_url", {"url": file_url}): - size=0.2 KiB, count=4
+traces = _get_traces() - size=21.9 KiB, count=460
+prof.enable() - size=4.2 KiB, count=65

@@ -1,0 +1,5 @@
+traces = _get_traces() - size=75.8 KiB, count=1603
+self._frames = tuple(reversed(frames)) - size=13.7 KiB, count=292
+optimized_batches = combined_table.to_batches(max_chunksize=target_batch_size) - size=1.6 KiB, count=20
+total_rows = sum(len(batch) for batch in batches) - size=0.6 KiB, count=10
+return list(optimized_batches) - size=0.2 KiB, count=2

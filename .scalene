@@ -1,0 +1,67 @@
+# Scalene Configuration for Robust Profiling
+# ==========================================
+
+# Process identification and profiling settings
+# This configuration ensures Scalene can robustly identify and profile
+# the target process, especially for complex applications like PyIceberg
+
+[scalene]
+# CPU profiling settings
+cpu = true
+cpu-sampling-rate = 0.01  # 1% sampling rate for detailed profiling
+cpu-percent-threshold = 1.0  # Only show functions using >1% CPU
+
+# Memory profiling settings
+memory = true
+memory-sampling-rate = 0.01  # 1% sampling rate for memory profiling
+
+# GPU profiling (if available)
+gpu = true
+
+# Output settings - CLI focused
+html = false  # Disable HTML output for CLI usage
+json = false  # Disable JSON for cleaner CLI output
+reduced-profile = true  # Reduce profile size for CLI
+
+# Process identification
+pid = null  # Will be set programmatically for robust process identification
+
+# Profiling duration and behavior
+profile-interval = 0.1  # Profile every 100ms
+profile-all = false  # Only profile the main process
+profile-only = ""  # Profile all modules by default
+
+# Performance and compatibility
+use-virtual-time = false
+no-nvidia-ml = false
+
+# Output file naming
+output-file = null  # No file output for CLI mode
+profile-only = "pyiceberg"  # Focus on PyIceberg modules
+
+# Advanced settings for robust profiling
+malloc-threshold = 1024  # Only track allocations > 1KB
+suppress-profile-errors = true  # Continue profiling even if some errors occur
+
+# Web UI settings
+web = false  # Disable web UI for headless operation
+port = 8080
+
+# Import profiling
+profile-imports = false  # Disable import profiling for cleaner output
+
+# Thread profiling
+profile-threads = true  # Enable thread-level profiling
+
+# Copy profiling
+profile-copy = true  # Track object copying overhead
+
+# Custom profiling regions
+profile-only-functions = ""  # Profile all functions
+profile-exclude-functions = ""  # Don't exclude any functions
+
+# Memory leak detection
+memory-leak-detector = false  # Disable for performance
+
+# CLI compatibility
+cli = true  # Enable CLI mode for scripting

@@ -1,0 +1,5 @@
+traces = _get_traces() - size=57.9 KiB, count=1227
+self._frames = tuple(reversed(frames)) - size=36.5 KiB, count=778
+return Array.from_arrow(obj) - size=6.7 KiB, count=130
+with self.instr.profile_block("vortex.write.streaming_compressed", {"rows": num_rows}): - size=0.1 KiB, count=2
+vortex_dtype = vx.DType.from_arrow(table.schema) - size=0.7 KiB, count=12

@@ -1,0 +1,5 @@
+lines = fp.readlines() - size=544.7 KiB, count=5820
+self._frames = tuple(reversed(frames)) - size=24.9 KiB, count=531
+callers[func] = nc, cc, tt, ct - size=24.4 KiB, count=153
+entries = self.getstats() - size=24.2 KiB, count=912
+self.stats[func] = cc, nc, tt, ct, callers - size=16.5 KiB, count=155

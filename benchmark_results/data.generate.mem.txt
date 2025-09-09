@@ -1,0 +1,5 @@
+'price': (np.arange(num_rows) % 1000).astype(np.float64) + 0.99, - size=3906.6 KiB, count=7
+'value': np.arange(num_rows, dtype=np.float64) * 1.5, - size=3906.4 KiB, count=4
+'id': np.arange(num_rows, dtype=np.int64), - size=3906.6 KiB, count=6
+'score': np.arange(num_rows, dtype=np.float64) * 0.1, - size=3906.6 KiB, count=3
+'timestamp': np.arange(1000000, 1000000 + num_rows, dtype=np.int64), - size=3906.3 KiB, count=2

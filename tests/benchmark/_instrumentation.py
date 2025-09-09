@@ -73,6 +73,7 @@ class Instrumentor:
         start = time.perf_counter()
         prof: Optional[cProfile.Profile] = None
         mem_before: Optional[tracemalloc.Snapshot] = None
+
         if self.config.enabled and self.config.cpu:
             try:
                 prof = cProfile.Profile()
@@ -80,6 +81,7 @@ class Instrumentor:
             except ValueError:
                 # Another profiler is active; skip CPU profiling for this block
                 prof = None
+
         if self.config.enabled and self.config.mem and tracemalloc.is_tracing():
             mem_before = tracemalloc.take_snapshot()
 
@@ -89,6 +91,7 @@ class Instrumentor:
             duration_ms = (time.perf_counter() - start) * 1000.0
 
             cpu_profile_path: Optional[str] = None
+
             if prof is not None:
                 prof.disable()
                 cpu_path = self._cpu_prof_path(name)

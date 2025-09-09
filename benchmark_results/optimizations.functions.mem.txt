@@ -1,0 +1,5 @@
+yield pa.table(base_data) - size=11.7 KiB, count=231
+callers[func] = nc, cc, tt, ct - size=9.5 KiB, count=88
+entries = self.getstats() - size=4.6 KiB, count=189
+self.stats[func] = cc, nc, tt, ct, callers - size=4.0 KiB, count=38
+return (code.co_filename, code.co_firstlineno, code.co_name) - size=2.9 KiB, count=58

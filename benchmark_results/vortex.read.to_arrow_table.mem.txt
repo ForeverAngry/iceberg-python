@@ -1,0 +1,5 @@
+traces = _get_traces() - size=28.2 KiB, count=595
+self._frames = tuple(reversed(frames)) - size=11.9 KiB, count=254
+array = self.to_arrow_array() - size=2.1 KiB, count=42
+with self.instr.profile_block("vortex.read.to_arrow_table"): - size=0.1 KiB, count=1
+return pyarrow.Table.from_struct_array(array) - size=0.2 KiB, count=3

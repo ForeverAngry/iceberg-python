@@ -1,0 +1,5 @@
+traces = _get_traces() - size=18.3 KiB, count=383
+self._frames = tuple(reversed(frames)) - size=21.6 KiB, count=461
+with self.instr.profile_block("parquet.write.total", {"rows": num_rows}): - size=0.1 KiB, count=2
+with open(self._json_path, "a", encoding="utf-8") as f: - size=1.4 KiB, count=21
+markers = {} - size=0.0 KiB, count=0

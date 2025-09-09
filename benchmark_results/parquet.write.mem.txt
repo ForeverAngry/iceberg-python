@@ -1,0 +1,5 @@
+with self.instr.profile_block("parquet.write", {"path": file_path}): - size=0.1 KiB, count=2
+with ParquetWriter( - size=0.1 KiB, count=2
+raise TypeError("not a path-like object") - size=0.1 KiB, count=2
+return Snapshot(traces, traceback_limit) - size=0.5 KiB, count=3
+self.traces = _Traces(traces) - size=0.5 KiB, count=3

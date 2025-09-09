@@ -1,0 +1,5 @@
+traces = _get_traces() - size=26.7 KiB, count=563
+self._frames = tuple(reversed(frames)) - size=11.3 KiB, count=242
+vx.io.write(reader, file_path) - size=0.6 KiB, count=11
+return Snapshot(traces, traceback_limit) - size=0.5 KiB, count=3
+self.traces = _Traces(traces) - size=0.5 KiB, count=3

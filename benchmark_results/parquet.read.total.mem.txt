@@ -1,0 +1,5 @@
+traces = _get_traces() - size=23.3 KiB, count=489
+self._frames = tuple(reversed(frames)) - size=17.7 KiB, count=377
+parquet_format = ds.ParquetFileFormat(**read_options) - size=0.5 KiB, count=5
+return (abs(self.size_diff), self.size, - size=21.0 KiB, count=270
+table = self._dataset.to_table( - size=0.3 KiB, count=3

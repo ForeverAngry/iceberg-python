@@ -1,0 +1,5 @@
+lines = fp.readlines() - size=558.4 KiB, count=5787
+traces = _get_traces() - size=31.5 KiB, count=641
+self._frames = tuple(reversed(frames)) - size=13.7 KiB, count=293
+total_rows = sum(len(batch) for batch in batches) - size=0.6 KiB, count=9
+prof = cProfile.Profile() - size=1.8 KiB, count=36

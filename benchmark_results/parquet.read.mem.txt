@@ -1,0 +1,5 @@
+table = self._dataset.to_table( - size=0.5 KiB, count=7
+parquet_format = ds.ParquetFileFormat(**read_options) - size=0.5 KiB, count=5
+dataset = ParquetDataset( - size=0.1 KiB, count=1
+with self.instr.profile_block("parquet.read", {"path": file_path}): - size=0.1 KiB, count=2
+markers = {} - size=0.0 KiB, count=0

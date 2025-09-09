@@ -1,0 +1,5 @@
+traces = _get_traces() - size=76.0 KiB, count=1606
+self._frames = tuple(reversed(frames)) - size=13.6 KiB, count=291
+batches = table.to_batches(max_chunksize=optimal_batch_size) - size=1.8 KiB, count=22
+self.traces = _Traces(traces) - size=0.3 KiB, count=4
+return Snapshot(traces, traceback_limit) - size=0.3 KiB, count=3

@@ -1,0 +1,5 @@
+traces = _get_traces() - size=21.2 KiB, count=445
+self._frames = tuple(reversed(frames)) - size=18.8 KiB, count=402
+array = self.to_arrow_array() - size=1.9 KiB, count=38
+with open(self._json_path, "a", encoding="utf-8") as f: - size=0.7 KiB, count=11
+with self.instr.profile_block("vortex.read.total", {"rows": num_rows}): - size=0.1 KiB, count=2

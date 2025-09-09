@@ -125,6 +125,66 @@ coverage-report: ## Combine and report coverage
 	poetry run coverage xml
 
 # ================
+# Profiling Section
+# ================
+
+##@ Profiling
+
+profile-scalene: ## Run Scalene profiling on a command (usage: make profile-scalene CMD="python my_script.py")
+	@if [ -z "$(CMD)" ]; then \
+		echo "Usage: make profile-scalene CMD=\"python my_script.py\""; \
+		exit 1; \
+	fi
+	@echo "🔬 Profiling command: $(CMD)"
+	poetry run python profile_scalene.py $(CMD)
+
+profile-scalene-cpu: ## Run CPU-only Scalene profiling (usage: make profile-scalene-cpu CMD="python my_script.py")
+	@if [ -z "$(CMD)" ]; then \
+		echo "Usage: make profile-scalene-cpu CMD=\"python my_script.py\""; \
+		exit 1; \
+	fi
+	@echo "🔬 CPU profiling: $(CMD)"
+	poetry run python profile_scalene.py --cpu-only $(CMD)
+
+profile-scalene-memory: ## Run memory-focused Scalene profiling (usage: make profile-scalene-memory CMD="python my_script.py")
+	@if [ -z "$(CMD)" ]; then \
+		echo "Usage: make profile-scalene-memory CMD=\"python my_script.py\""; \
+		exit 1; \
+	fi
+	@echo "🔬 Memory profiling: $(CMD)"
+	poetry run python profile_scalene.py --memory-leak $(CMD)
+
+profile-list-processes: ## List running processes that can be profiled
+	poetry run python profile_scalene.py --list-processes
+
+profile-process: ## Profile a running process by PID (usage: make profile-process PID=12345)
+	@if [ -z "$(PID)" ]; then \
+		echo "Usage: make profile-process PID=12345"; \
+		exit 1; \
+	fi
+	@echo "🔬 Profiling process PID: $(PID)"
+	poetry run python profile_scalene.py --pid $(PID)
+
+profile-find-process: ## Find and profile a process by name (usage: make profile-find-process NAME=python)
+	@if [ -z "$(NAME)" ]; then \
+		echo "Usage: make profile-find-process NAME=python"; \
+		exit 1; \
+	fi
+	@echo "🔍 Finding and profiling process: $(NAME)"
+	poetry run python profile_scalene.py --find-process $(NAME)
+
+profile-vortex: ## Profile Vortex-related operations
+	@echo "🔬 Profiling Vortex operations..."
+	poetry run python profile_scalene.py --modules pyiceberg.io.vortex python -c "
+import time
+from pyiceberg.io.vortex import VORTEX_AVAILABLE
+print(f'Vertex available: {VORTEX_AVAILABLE}')
+if VORTEX_AVAILABLE:
+    print('✅ Memory optimizations should be active')
+time.sleep(2)
+"
+
+# ================
 # Documentation
 # ================
 

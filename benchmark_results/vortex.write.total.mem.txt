@@ -1,0 +1,5 @@
+traces = _get_traces() - size=20.4 KiB, count=430
+self._frames = tuple(reversed(frames)) - size=19.3 KiB, count=411
+return (abs(self.size_diff), self.size, - size=20.6 KiB, count=265
+with open(self._json_path, "a", encoding="utf-8") as f: - size=1.1 KiB, count=16
+parquet_format = ds.ParquetFileFormat(**read_options) - size=0.0 KiB, count=0

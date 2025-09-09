@@ -1,0 +1,5 @@
+traces = _get_traces() - size=76.6 KiB, count=1619
+self._frames = tuple(reversed(frames)) - size=13.7 KiB, count=293
+self.traces = _Traces(traces) - size=0.3 KiB, count=4
+return Snapshot(traces, traceback_limit) - size=0.3 KiB, count=3
+reader = pa.RecordBatchReader.from_batches(table.schema, optimized_batches) - size=0.1 KiB, count=2

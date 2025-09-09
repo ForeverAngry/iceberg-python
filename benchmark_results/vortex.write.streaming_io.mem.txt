@@ -1,0 +1,5 @@
+return Array.from_arrow(obj) - size=6.9 KiB, count=133
+vx.io.write(array_iterator, file_path) - size=0.7 KiB, count=7
+batch_generator(table) - size=0.0 KiB, count=0
+with self.instr.profile_block("vortex.write.streaming_io", {"path": file_path, "compress": compress}): - size=0.2 KiB, count=3
+return Snapshot(traces, traceback_limit) - size=0.5 KiB, count=3

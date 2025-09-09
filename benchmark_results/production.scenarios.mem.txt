@@ -1,0 +1,5 @@
+callers[func] = nc, cc, tt, ct - size=22.6 KiB, count=140
+traces = _get_traces() - size=56.4 KiB, count=1188
+entries = self.getstats() - size=23.9 KiB, count=894
+return (abs(self.size_diff), self.size, - size=13.2 KiB, count=170
+callers = {} - size=8.8 KiB, count=141

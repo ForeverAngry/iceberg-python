@@ -1,0 +1,5 @@
+traces = _get_traces() - size=30.8 KiB, count=626
+self._frames = tuple(reversed(frames)) - size=13.7 KiB, count=292
+return pa.table(base_data) - size=0.9 KiB, count=17
+with open(self._json_path, "a", encoding="utf-8") as f: - size=0.7 KiB, count=11
+vx.io.write(reader, file_path) - size=1.3 KiB, count=24
