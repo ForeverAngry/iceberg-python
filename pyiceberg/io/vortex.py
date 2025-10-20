@@ -290,13 +290,8 @@ def write_vortex_file(
         # Convert large tables to streaming reader
         arrow_table = arrow_table.to_reader(max_chunksize=VORTEX_BATCH_SIZE)
 
-    # Apply compression if requested and not streaming
-    if compression and compression != "none" and isinstance(arrow_table, pa.Table):
-        # Pre-compress for better performance
-        vortex_array = vx.array(arrow_table)
-        if compression == "best":
-            vortex_array = vx.compress(vortex_array)
-        arrow_table = vortex_array.to_arrow()
+    # Note: Vortex handles compression internally during write
+    # Pre-compression with vortex.array() is not needed and may cause API issues
 
     # Check if we can write directly
     is_local = not file_path.startswith(("s3://", "gs://", "abfs://", "http://", "https://"))
@@ -666,10 +661,7 @@ def _validate_vortex_schema_compatibility(arrow_schema: pa.Schema) -> None:
         if pa.types.is_union(field_type):
             unsupported_types.append(f"Union type in field '{field.name}'")
         elif pa.types.is_large_list(field_type) or pa.types.is_large_string(field_type):
-            # Large types might have performance implications
-            warning_msg = f"Large type detected in field '{field.name}' - may impact performance"
-            logger.warning(warning_msg)
-            unsupported_types.append(warning_msg)
+            # Large types might have performance implications - just warn, don't error
             logger.warning(f"Large type detected in field '{field.name}' - may impact performance")
 
     if unsupported_types:

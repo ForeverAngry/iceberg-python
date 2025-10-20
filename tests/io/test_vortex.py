@@ -204,13 +204,17 @@ class TestArrowVortexConversion:
         """Test basic Vortex to Arrow table conversion."""
 
     def test_vortex_to_arrow_with_invalid_array(self) -> None:
-        """Test Vortex to Arrow conversion with invalid input."""
-        # Create a mock object without conversion methods
+        """Test Vortex to Arrow conversion with invalid input that causes conversion failure."""
+        # Create a mock object that will fail during conversion
         mock_vortex_array = MagicMock()
-        del mock_vortex_array.to_arrow_array
-        del mock_vortex_array.to_arrow
-
-        with pytest.raises(ValueError, match="does not have a recognized Arrow conversion method"):
+        # Remove all conversion methods to force the fallback path
+        mock_vortex_array.to_arrow_table = None
+        mock_vortex_array.to_arrow = None
+        # Make the fallback also fail by making it raise an exception
+        type(mock_vortex_array).__name__ = "MockVortexArray"
+        
+        # The fallback path will attempt vx.array() which should fail with our mock
+        with pytest.raises(ValueError, match="Failed to convert Vortex array to Arrow table"):
             vortex_to_arrow_table(mock_vortex_array)
 
 
