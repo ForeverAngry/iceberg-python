@@ -104,6 +104,26 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 - **Tests**: 57 tests
 - **Features**: Enhanced DynamoDB catalog with REST server integration
 
+### PR #2459: Vortex File Format Support
+
+- **New Files**:
+    - `pyiceberg/io/vortex.py` - Native Vortex file I/O module
+    - `tests/io/test_vortex.py` - Vortex unit tests (377 lines)
+    - `tests/integration/test_vortex_integration.py` - Vortex integration tests (576 lines)
+- **Modified**:
+    - `pyiceberg/io/pyarrow.py` - Added Vortex file format support with ORC handling
+    - `pyiceberg/table/__init__.py` - Updated to use `_files_to_data_files` (supports Parquet, ORC, Vortex)
+    - `pyiceberg/manifest.py` - Added Vortex to FileFormat enum
+    - `tests/io/test_pyarrow.py` - Enhanced with Vortex tests
+    - `tests/integration/test_add_files.py` - Added Vortex file integration
+- **Features**:
+    - Full support for Vortex columnar file format
+    - Automatic format detection based on file extension (.parquet, .vortex)
+    - Native PyArrow integration for Vortex files
+    - Support for projection and filtering on Vortex files
+    - Backwards compatible with existing Parquet workflows
+- **Dependencies**: Added vortex-data package support (optional)
+
 ---
 
 ## Maintenance History
@@ -111,11 +131,12 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 ### Initial Creation (2024)
 
 - Created `combined-prs-2434-2369-2627` from `upstream/main`
-- Merged PRs #2434, #2369, #2627
+- Merged PRs #2434, #2369, #2627, #2459
 - Resolved conflicts
 - Fixed linting errors (B904 exception chaining)
 - Added custom data file handling methods
-- All 137 tests passing (108 from PRs + 29 custom)
+- All tests passing (108 from first 3 PRs + 29 custom + Vortex tests)
+- Updated custom methods to support Vortex file format via `_files_to_data_files`
 
 ### Future Updates
 
@@ -129,6 +150,8 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 2. **Test Coverage**: 100% test coverage for custom features
 3. **Linting**: All 12 pre-commit hooks passing
 4. **Compatibility**: Code uses modern Python 3.13+ syntax (`|` for type unions)
+5. **File Format Support**: Automatically detects and handles Parquet, ORC, and Vortex file formats
+6. **Vortex Integration**: Full Vortex support with optional vortex-data dependency
 
 ---
 
@@ -136,16 +159,17 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 
 ### Files with Custom Changes
 
-- `pyiceberg/table/__init__.py` (4 new methods)
-- `tests/table/test_transaction_data_files.py` (29 tests)
+- `pyiceberg/table/__init__.py` (4 new methods, updated to use `_files_to_data_files`)
+- `tests/table/test_transaction_data_files.py` (29 tests, updated for Vortex compatibility)
 - `.pre-commit-config.yaml` (exclusion pattern)
 
 ### Total Changes vs Upstream
 
-- **Commits ahead**: 21
-- **Files changed**: 17 (6 added, 11 modified)
-- **Lines added**: ~1000+
-- **Tests**: 137 (all passing)
+- **Commits ahead**: 24+ (including Vortex merge)
+- **Files changed**: 20+ (10+ added, 14+ modified)
+- **Lines added**: ~3000+
+- **Tests**: All passing (includes Vortex integration tests)
+- **File Formats Supported**: Parquet, ORC, Vortex
 
 ---
 
