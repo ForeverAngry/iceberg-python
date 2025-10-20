@@ -212,7 +212,7 @@ class TestArrowVortexConversion:
         mock_vortex_array.to_arrow = None
         # Make the fallback also fail by making it raise an exception
         type(mock_vortex_array).__name__ = "MockVortexArray"
-        
+
         # The fallback path will attempt vx.array() which should fail with our mock
         with pytest.raises(ValueError, match="Failed to convert Vortex array to Arrow table"):
             vortex_to_arrow_table(mock_vortex_array)
