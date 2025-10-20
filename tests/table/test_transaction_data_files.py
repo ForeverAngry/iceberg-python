@@ -16,6 +16,7 @@
 # under the License.
 """Tests for Transaction data file handling methods."""
 
+from typing import Any, List
 from unittest.mock import MagicMock, Mock, patch
 
 import pyarrow as pa
@@ -127,8 +128,8 @@ class TestGetDataFilesFromObjects:
         txn = table_v2.transaction()
 
         mock_data_file = Mock(spec=DataFile)
-        with patch("pyiceberg.table._parquet_files_to_data_files", return_value=[mock_data_file]):
-            result = txn.get_data_files_from_objects(["s3://bucket/path/to/file1.parquet"])
+        with patch("pyiceberg.table._files_to_data_files", return_value=[mock_data_file]):
+            result = txn.get_data_files_from_objects(["s3://bucket/path/to/file.parquet"])
 
         assert len(result) == 1
         assert result[0] == mock_data_file
@@ -314,7 +315,7 @@ class TestIntegrationGetDataFilesAndAdd:
         mock_snapshot.__enter__ = Mock(return_value=mock_snapshot)
         mock_snapshot.__exit__ = Mock(return_value=None)
 
-        with patch("pyiceberg.table._parquet_files_to_data_files", return_value=[mock_data_file]):
+        with patch("pyiceberg.table._files_to_data_files", return_value=[mock_data_file]):
             with patch.object(txn, "update_snapshot") as mock_update:
                 mock_fast_append = MagicMock()
                 mock_fast_append.fast_append.return_value = mock_snapshot
