@@ -405,7 +405,7 @@ def test_list_namespaces_with_parent(rest_server_app: TestClient) -> None:
 def test_invalid_namespace_format(rest_server_app: TestClient) -> None:
     """Test creating a namespace with invalid format."""
     # Empty namespace array
-    namespace_data = {"namespace": [], "properties": {}}
+    namespace_data: dict[str, object] = {"namespace": [], "properties": {}}
 
     response = rest_server_app.post("/v1/namespaces", json=namespace_data)
     # Should return error (400 or 500 depending on validation)

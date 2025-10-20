@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 ---
-exclude: ^vendor/
+exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

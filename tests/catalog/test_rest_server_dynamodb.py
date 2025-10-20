@@ -40,11 +40,7 @@ def test_rest_server_can_use_dynamodb_catalog(_dynamodb: Any, _bucket_initialize
     """
     # Create a DynamoDB catalog (simulates what the REST server does)
     catalog = DynamoDbCatalog(
-        "test_rest_catalog",
-        **{
-            "warehouse": f"s3://{BUCKET_NAME}",
-            "table-name": "test_rest_dynamodb_table"
-        }
+        "test_rest_catalog", **{"warehouse": f"s3://{BUCKET_NAME}", "table-name": "test_rest_dynamodb_table"}
     )
 
     # Verify basic catalog operations work
@@ -63,11 +59,7 @@ def test_rest_server_can_use_dynamodb_catalog(_dynamodb: Any, _bucket_initialize
     assert props["owner"] == "rest_server"
 
     # 4. Update namespace properties
-    summary = catalog.update_namespace_properties(
-        namespace,
-        removals=None,
-        updates={"description": "REST server test namespace"}
-    )
+    summary = catalog.update_namespace_properties(namespace, removals=None, updates={"description": "REST server test namespace"})
     assert "description" in summary.updated
 
     # 5. Drop namespace
@@ -86,12 +78,7 @@ def test_dynamodb_catalog_properties_for_rest(_dynamodb: Any) -> None:
     Test that DynamoDB catalog exposes properties correctly for REST server config endpoint.
     """
     catalog = DynamoDbCatalog(
-        "test_catalog",
-        **{
-            "warehouse": f"s3://{BUCKET_NAME}",
-            "table-name": "test_table",
-            "dynamodb.region": "us-east-1"
-        }
+        "test_catalog", **{"warehouse": f"s3://{BUCKET_NAME}", "table-name": "test_table", "dynamodb.region": "us-east-1"}
     )
 
     # Verify catalog properties are accessible (used by /v1/config endpoint)
@@ -111,14 +98,11 @@ def test_multiple_operations_sequence(_dynamodb: Any, _bucket_initialize: None) 
     """
     # Use unique table name to avoid cross-test contamination
     import uuid
+
     unique_suffix = str(uuid.uuid4())[:8]
 
     catalog = DynamoDbCatalog(
-        "test_catalog",
-        **{
-            "warehouse": f"s3://{BUCKET_NAME}",
-            "table-name": f"test_multi_ops_{unique_suffix}"
-        }
+        "test_catalog", **{"warehouse": f"s3://{BUCKET_NAME}", "table-name": f"test_multi_ops_{unique_suffix}"}
     )
 
     # Simulate REST client workflow

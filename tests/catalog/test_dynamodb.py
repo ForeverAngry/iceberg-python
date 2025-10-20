@@ -1069,9 +1069,11 @@ def test_genuine_concurrent_update_still_fails(
 
     catalog.create_namespace(namespace=database_name)
 
-    with patch.object(catalog, "_get_iceberg_table_item") as mock_get_item, patch.object(
-        catalog, "_put_dynamo_item"
-    ) as mock_put_item, patch.object(catalog, "_write_metadata"):
+    with (
+        patch.object(catalog, "_get_iceberg_table_item") as mock_get_item,
+        patch.object(catalog, "_put_dynamo_item") as mock_put_item,
+        patch.object(catalog, "_write_metadata"),
+    ):
         initial_metadata_location = f"s3://{BUCKET_NAME}/metadata/v1-{uuid.uuid4()}.metadata.json"
         our_metadata_location = f"s3://{BUCKET_NAME}/metadata/v2-{uuid.uuid4()}.metadata.json"
         other_metadata_location = f"s3://{BUCKET_NAME}/metadata/v3-{uuid.uuid4()}.metadata.json"  # Different!
@@ -1128,11 +1130,12 @@ def test_genuine_table_already_exists_still_fails(
     catalog = DynamoDbCatalog("test_catalog", **{"warehouse": f"s3://{BUCKET_NAME}", "s3.endpoint": moto_endpoint_url})
     catalog.create_namespace(namespace=database_name)
 
-    with patch.object(catalog, "_get_iceberg_table_item") as mock_get_item, patch.object(
-        catalog, "_put_dynamo_item"
-    ) as mock_put_item, patch.object(catalog, "_write_metadata"), patch.object(
-        catalog, "load_table"
-    ) as mock_load_table:
+    with (
+        patch.object(catalog, "_get_iceberg_table_item") as mock_get_item,
+        patch.object(catalog, "_put_dynamo_item") as mock_put_item,
+        patch.object(catalog, "_write_metadata"),
+        patch.object(catalog, "load_table") as mock_load_table,
+    ):
         # Mock table doesn't exist initially
         from pyiceberg.exceptions import NoSuchTableError
 

@@ -245,7 +245,7 @@ async def list_namespaces(parent: Optional[str] = None):
         return ListNamespacesResponse(namespaces=[tuple_to_namespace(ns) for ns in namespace_list])
     except Exception as e:
         logger.error(f"Failed to list namespaces: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 @app.post("/v1/namespaces", response_model=CreateNamespaceResponse, status_code=status.HTTP_201_CREATED)
@@ -261,10 +261,10 @@ async def create_namespace(request: CreateNamespaceRequest):
         logger.info(f"Created namespace: {request.namespace}")
         return CreateNamespaceResponse(namespace=request.namespace, properties=request.properties or {})
     except NamespaceAlreadyExistsError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to create namespace {request.namespace}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 @app.get("/v1/namespaces/{namespace}", response_model=LoadNamespaceResponse)
@@ -276,10 +276,10 @@ async def load_namespace(namespace: str):
         properties = catalog.load_namespace_properties(namespace_tuple)
         return LoadNamespaceResponse(namespace=namespace_parts, properties=properties)
     except NoSuchNamespaceError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to load namespace {namespace}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 @app.delete("/v1/namespaces/{namespace}", status_code=status.HTTP_204_NO_CONTENT)
@@ -291,12 +291,12 @@ async def drop_namespace(namespace: str):
         catalog.drop_namespace(namespace_tuple)
         logger.info(f"Dropped namespace: {namespace}")
     except NoSuchNamespaceError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except NamespaceNotEmptyError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to drop namespace {namespace}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 @app.post("/v1/namespaces/{namespace}/properties", response_model=UpdateNamespacePropertiesResponse)
@@ -313,10 +313,10 @@ async def update_namespace_properties(namespace: str, request: UpdateNamespacePr
         logger.info(f"Updated namespace properties for {namespace}")
         return UpdateNamespacePropertiesResponse(removed=summary.removed, updated=summary.updated, missing=summary.missing)
     except NoSuchNamespaceError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to update namespace properties for {namespace}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 # ============================================================================
@@ -347,10 +347,10 @@ async def list_tables(namespace: str):
 
         return ListTablesResponse(identifiers=identifiers)
     except NoSuchNamespaceError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to list tables in namespace {namespace}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 @app.get("/v1/namespaces/{namespace}/tables/{table}")
@@ -376,10 +376,10 @@ async def load_table(namespace: str, table: str):
             }
         )
     except NoSuchTableError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to load table {namespace}.{table}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 @app.head("/v1/namespaces/{namespace}/tables/{table}")
@@ -408,10 +408,10 @@ async def drop_table(namespace: str, table: str, purge: bool = False):
             catalog.drop_table(identifier)
             logger.info(f"Dropped table: {namespace}.{table}")
     except NoSuchTableError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to drop table {namespace}.{table}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
 
 # ============================================================================

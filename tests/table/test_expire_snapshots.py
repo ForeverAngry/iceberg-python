@@ -286,9 +286,6 @@ def test_retain_last_n_with_protection(table_v2: Table) -> None:
     """Test retain_last_n keeps most recent snapshots plus protected ones."""
     from types import SimpleNamespace
 
-    # Clear shared state set on the class between tests
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
-
     PROTECTED_SNAPSHOT = 3051729675574597101  # oldest (also protected)
     EXPIRE_SNAPSHOT = 3051729675574597102
     KEEP_SNAPSHOT_1 = 3051729675574597103
@@ -332,8 +329,6 @@ def test_retain_last_n_with_protection(table_v2: Table) -> None:
 
 def test_retain_last_n_validation(table_v2: Table) -> None:
     """Test retain_last_n validates n >= 1."""
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
-
     with pytest.raises(ValueError, match="Number of snapshots to retain must be at least 1"):
         table_v2.maintenance.expire_snapshots().retain_last_n(0)
 
@@ -343,8 +338,6 @@ def test_retain_last_n_validation(table_v2: Table) -> None:
 
 def test_with_retention_policy_validation(table_v2: Table) -> None:
     """Test with_retention_policy validates parameter ranges."""
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
-
     with pytest.raises(ValueError, match="retain_last_n must be at least 1"):
         table_v2.maintenance.expire_snapshots().with_retention_policy(retain_last_n=0).commit()
 
@@ -355,8 +348,6 @@ def test_with_retention_policy_validation(table_v2: Table) -> None:
 def test_with_retention_policy_no_criteria_does_nothing(table_v2: Table) -> None:
     """Test with_retention_policy does nothing when no criteria provided."""
     from types import SimpleNamespace
-
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
 
     SNAPSHOT_1, SNAPSHOT_2 = 3051729675574597501, 3051729675574597502
     snapshots = [
@@ -373,8 +364,6 @@ def test_with_retention_policy_no_criteria_does_nothing(table_v2: Table) -> None
 
 def test_get_expiration_properties_missing_values(table_v2: Table) -> None:
     """Test _get_expiration_properties handles missing properties gracefully."""
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
-
     # No expiration properties set
     table_v2.metadata = table_v2.metadata.model_copy(update={"properties": {}})
     expire = table_v2.maintenance.expire_snapshots()
@@ -388,8 +377,6 @@ def test_get_expiration_properties_missing_values(table_v2: Table) -> None:
 def test_retain_last_n_fewer_snapshots_than_requested(table_v2: Table) -> None:
     """Test retain_last_n when table has fewer snapshots than requested."""
     from types import SimpleNamespace
-
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
 
     SNAPSHOT_1, SNAPSHOT_2 = 3051729675574597601, 3051729675574597602
     snapshots = [
@@ -408,8 +395,6 @@ def test_retain_last_n_fewer_snapshots_than_requested(table_v2: Table) -> None:
 def test_older_than_with_retention_edge_cases(table_v2: Table) -> None:
     """Test edge cases for older_than_with_retention."""
     from types import SimpleNamespace
-
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
 
     # Test with retain_last_n and a valid timestamp
     EXPIRE_SNAPSHOT, KEEP_SNAPSHOT_1, KEEP_SNAPSHOT_2 = 3051729675574597701, 3051729675574597702, 3051729675574597703
@@ -443,8 +428,6 @@ def test_older_than_with_retention_edge_cases(table_v2: Table) -> None:
 def test_with_retention_policy_partial_properties(table_v2: Table) -> None:
     """Test with_retention_policy with only some properties set."""
     from types import SimpleNamespace
-
-    ExpireSnapshots._snapshot_ids_to_expire.clear()
 
     # Only max-snapshot-age-ms set, no min-snapshots-to-keep
     properties = {"history.expire.max-snapshot-age-ms": "250"}

@@ -44,13 +44,10 @@ def dynamodb_catalog(_dynamodb: Any, _bucket_initialize: None) -> DynamoDbCatalo
     This simulates what the REST server uses internally.
     """
     import uuid
+
     unique_table = f"test_rest_ops_{str(uuid.uuid4())[:8]}"
 
-    return DynamoDbCatalog(
-        "test_rest_catalog",
-        warehouse=f"s3://{BUCKET_NAME}",
-        **{"table-name": unique_table}
-    )
+    return DynamoDbCatalog("test_rest_catalog", warehouse=f"s3://{BUCKET_NAME}", **{"table-name": unique_table})
 
 
 # ============================================================================
@@ -122,10 +119,7 @@ def test_namespace_properties(dynamodb_catalog: DynamoDbCatalog) -> None:
     test_ns = ("test_props",)
 
     # Create with properties
-    dynamodb_catalog.create_namespace(
-        test_ns,
-        properties={"owner": "test_user", "description": "Test namespace"}
-    )
+    dynamodb_catalog.create_namespace(test_ns, properties={"owner": "test_user", "description": "Test namespace"})
 
     # Load properties (GET /v1/namespaces/{namespace})
     props = dynamodb_catalog.load_namespace_properties(test_ns)
@@ -133,10 +127,7 @@ def test_namespace_properties(dynamodb_catalog: DynamoDbCatalog) -> None:
     assert props["description"] == "Test namespace"
 
     # Update properties (POST /v1/namespaces/{namespace}/properties)
-    result = dynamodb_catalog.update_namespace_properties(
-        test_ns,
-        updates={"version": "1.0"}
-    )
+    result = dynamodb_catalog.update_namespace_properties(test_ns, updates={"version": "1.0"})
     assert "version" in result.updated
 
     # Verify update
