@@ -40,6 +40,7 @@ This file tracks all custom modifications made to the `combined-prs-2434-2369-26
    - Commits the operation to the transaction
 
 **Tests**: `tests/table/test_transaction_data_files.py`
+
 - 29 comprehensive tests covering all methods
 - Tests for path validation, file existence, object conversion, and data file addition
 - Integration tests for end-to-end workflows
@@ -53,6 +54,7 @@ This file tracks all custom modifications made to the `combined-prs-2434-2369-26
 **File**: `.pre-commit-config.yaml`
 
 **Change**: Added exclusion pattern to skip linting on optional dependency files
+
 ```yaml
 exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 ```
@@ -72,6 +74,7 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 **Resolution**: Removed obsolete `.clear()` calls on class attribute (8 occurrences)
 
 **Commits involved**:
+
 - Merge of PR #2434 (thread safety fixes)
 - Merge of PR #2369 (retention strategies)
 
@@ -80,20 +83,23 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 ## Merged Features
 
 ### PR #2434: Branch Merge Strategies
+
 - **Tests**: `tests/table/test_branch_merge_strategies.py` (35 tests)
 - **Core Changes**: `pyiceberg/table/update/snapshot.py`
 - **Features**: Fast-forward, squash, rebase, cherry-pick, and merge strategies
 
 ### PR #2369: Snapshot Expiration with Retention Strategies
+
 - **Tests**: `tests/table/test_expire_snapshots.py` (16 tests)
 - **Core Changes**: `pyiceberg/table/update/snapshot.py`
 - **Features**: Retention policies for snapshot expiration
 
 ### PR #2627: DynamoDB Catalog Enhancements
-- **New Files**: 
-  - `dev/rest-server/` - Universal Iceberg REST Catalog Server
-  - `tests/catalog/test_dynamodb_localstack.py`
-  - `tests/catalog/test_rest_server*.py`
+
+- **New Files**:
+    - `dev/rest-server/` - Universal Iceberg REST Catalog Server
+    - `tests/catalog/test_dynamodb_localstack.py`
+    - `tests/catalog/test_rest_server*.py`
 - **Modified**: `pyiceberg/catalog/dynamodb.py`, `tests/catalog/test_dynamodb.py`
 - **Tests**: 57 tests
 - **Features**: Enhanced DynamoDB catalog with REST server integration
@@ -103,6 +109,7 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 ## Maintenance History
 
 ### Initial Creation (2024)
+
 - Created `combined-prs-2434-2369-2627` from `upstream/main`
 - Merged PRs #2434, #2369, #2627
 - Resolved conflicts
@@ -111,6 +118,7 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 - All 137 tests passing (108 from PRs + 29 custom)
 
 ### Future Updates
+
 (Document each time you sync with upstream/main here)
 
 ---
@@ -127,11 +135,13 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 ## Quick Reference
 
 ### Files with Custom Changes
+
 - `pyiceberg/table/__init__.py` (4 new methods)
 - `tests/table/test_transaction_data_files.py` (29 tests)
 - `.pre-commit-config.yaml` (exclusion pattern)
 
 ### Total Changes vs Upstream
+
 - **Commits ahead**: 21
 - **Files changed**: 17 (6 added, 11 modified)
 - **Lines added**: ~1000+
@@ -142,11 +152,15 @@ exclude: ^vendor/|^dev/rest-server/|^tests/catalog/test_rest_server.*\.py$
 ## Recovery Information
 
 ### Backup Branches
+
 List backup branches created during maintenance:
+
 - (none yet - use `maintain-branch.sh` to create backups automatically)
 
 ### Git Tags
+
 Important milestone tags:
+
 - (none yet - consider tagging: `git tag -a v1.0-custom-combined -m "Initial combined branch with data file methods"`)
 
 ---

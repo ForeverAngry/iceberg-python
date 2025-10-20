@@ -5,7 +5,7 @@
 Your branch `combined-prs-2434-2369-2627` contains:
 
 1. **PR #2434** - Branch merge strategies
-2. **PR #2369** - Snapshot expiration with retention strategies  
+2. **PR #2369** - Snapshot expiration with retention strategies
 3. **PR #2627** - DynamoDB catalog enhancements
 4. **Custom additions** - Transaction data file handling methods
 
@@ -67,15 +67,15 @@ git rebase upstream/main
 git push origin combined-prs-2434-2369-2627 --force-with-lease
 ```
 
-### Advantages
+### Strategy 1 Advantages
 
-✅ Clean, linear history  
-✅ Easy to see what changed  
+✅ Clean, linear history
+✅ Easy to see what changed
 ✅ Conflicts resolved incrementally
 
-### Disadvantages
+### Strategy 1 Disadvantages
 
-⚠️ Rewrites history (need force push)  
+⚠️ Rewrites history (need force push)
 ⚠️ Can be complex if many conflicts
 
 ---
@@ -108,15 +108,15 @@ git merge upstream/main
 git push origin combined-prs-2434-2369-2627
 ```
 
-### Advantages
+### Strategy 2 Advantages
 
-✅ Preserves history  
-✅ No force push needed  
+✅ Preserves history
+✅ No force push needed
 ✅ Easier for collaboration
 
-### Disadvantages
+### Strategy 2 Disadvantages
 
-⚠️ Creates merge commits  
+⚠️ Creates merge commits
 ⚠️ History can be harder to read
 
 ---
@@ -139,6 +139,7 @@ git rebase upstream/main
 ```
 
 If something goes wrong:
+
 ```bash
 # Reset to your backup
 git reset --hard combined-prs-2434-2369-2627-backup
@@ -206,7 +207,7 @@ git status
 
 ### Step 2: Open conflicting files and look for markers
 
-```
+```text
 <<<<<<< HEAD (your changes)
 your code
 =======

@@ -91,7 +91,7 @@ class TestDoesFileExist:
         mock_input = MagicMock()
         mock_input.open.return_value.__enter__ = Mock(return_value=None)
         mock_input.open.return_value.__exit__ = Mock(return_value=None)
-        table_v2.io.new_input = Mock(return_value=mock_input)
+        table_v2.io.new_input = Mock(return_value=mock_input)  # type: ignore[method-assign]
 
         assert txn._does_file_exist("s3://bucket/path/to/file.parquet") is True
 
@@ -100,7 +100,7 @@ class TestDoesFileExist:
         txn = table_v2.transaction()
 
         # Mock the IO to raise an exception
-        table_v2.io.new_input = Mock(side_effect=FileNotFoundError("File not found"))
+        table_v2.io.new_input = Mock(side_effect=FileNotFoundError("File not found"))  # type: ignore[method-assign]
 
         assert txn._does_file_exist("s3://bucket/path/to/nonexistent.parquet") is False
 
@@ -114,7 +114,7 @@ class TestDoesFileExist:
         txn = table_v2.transaction()
 
         # Mock the IO to raise a generic exception
-        table_v2.io.new_input = Mock(side_effect=Exception("Generic IO error"))
+        table_v2.io.new_input = Mock(side_effect=Exception("Generic IO error"))  # type: ignore[method-assign]
 
         assert txn._does_file_exist("s3://bucket/path/to/file.parquet") is False
 
@@ -140,16 +140,14 @@ class TestGetDataFilesFromObjects:
         mock_data_file1 = Mock(spec=DataFile)
         mock_data_file2 = Mock(spec=DataFile)
 
-        def mock_converter(table_metadata, file_paths, io):
+        def mock_converter(table_metadata: Any, file_paths: Any, io: Any) -> Any:
             if "file1" in file_paths[0]:
                 return [mock_data_file1]
             else:
                 return [mock_data_file2]
 
-        with patch("pyiceberg.table._parquet_files_to_data_files", side_effect=mock_converter):
-            result = txn.get_data_files_from_objects(
-                ["s3://bucket/path/to/file1.parquet", "s3://bucket/path/to/file2.parquet"]
-            )
+        with patch("pyiceberg.table._files_to_data_files", side_effect=mock_converter):
+            result = txn.get_data_files_from_objects(["s3://bucket/path/to/file1.parquet", "s3://bucket/path/to/file2.parquet"])
 
         assert len(result) == 2
 
@@ -162,7 +160,7 @@ class TestGetDataFilesFromObjects:
 
         mock_data_file = Mock(spec=DataFile)
 
-        def mock_df_converter(**kwargs):
+        def mock_df_converter(**kwargs: Any) -> Any:
             return [mock_data_file]
 
         with patch("pyiceberg.io.pyarrow._dataframe_to_data_files", side_effect=mock_df_converter):
@@ -179,7 +177,7 @@ class TestGetDataFilesFromObjects:
         mock_data_file1 = Mock(spec=DataFile)
         mock_data_file2 = Mock(spec=DataFile)
 
-        with patch("pyiceberg.table._parquet_files_to_data_files", return_value=[mock_data_file1]):
+        with patch("pyiceberg.table._files_to_data_files", return_value=[mock_data_file1]):
             with patch("pyiceberg.io.pyarrow._dataframe_to_data_files", return_value=[mock_data_file2]):
                 result = txn.get_data_files_from_objects(["s3://bucket/file.parquet", df])
 
@@ -190,14 +188,14 @@ class TestGetDataFilesFromObjects:
         txn = table_v2.transaction()
 
         with pytest.raises(ValueError, match="Unsupported object type"):
-            txn.get_data_files_from_objects([123])  # type: ignore
+            txn.get_data_files_from_objects([123])  # type: ignore[list-item]
 
     def test_unsupported_dict_raises_error(self, table_v2: Table) -> None:
         """Test that dict objects raise ValueError."""
         txn = table_v2.transaction()
 
         with pytest.raises(ValueError, match="Unsupported object type"):
-            txn.get_data_files_from_objects([{"key": "value"}])  # type: ignore
+            txn.get_data_files_from_objects([{"key": "value"}])  # type: ignore[list-item]
 
     def test_invalid_path_string_raises_error(self, table_v2: Table) -> None:
         """Test that invalid path strings raise ValueError."""
@@ -259,7 +257,7 @@ class TestAddDataFiles:
         """Test adding multiple data files."""
         txn = table_v2.transaction()
 
-        mock_data_files = [Mock(spec=DataFile) for _ in range(3)]
+        mock_data_files: List[DataFile] = [Mock(spec=DataFile) for _ in range(3)]  # type: ignore[misc]
         mock_snapshot = MagicMock()
         mock_snapshot.__enter__ = Mock(return_value=mock_snapshot)
         mock_snapshot.__exit__ = Mock(return_value=None)
@@ -288,7 +286,7 @@ class TestAddDataFiles:
         """Test that add_data_files properly calls append_data_file for each file."""
         txn = table_v2.transaction()
 
-        mock_data_files = [Mock(spec=DataFile), Mock(spec=DataFile)]
+        mock_data_files: List[DataFile] = [Mock(spec=DataFile), Mock(spec=DataFile)]  # type: ignore[misc]
         mock_snapshot = MagicMock()
         mock_snapshot.__enter__ = Mock(return_value=mock_snapshot)
         mock_snapshot.__exit__ = Mock(return_value=None)
