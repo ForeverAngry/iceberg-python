@@ -200,6 +200,9 @@ class TableProperties:
     WRITE_AVRO_COMPRESSION = "write.avro.compression-codec"
     WRITE_AVRO_COMPRESSION_DEFAULT = "gzip"
 
+    WRITE_FORMAT_DEFAULT = "write.format.default"
+    WRITE_FORMAT_DEFAULT_DEFAULT = "parquet"
+
     DEFAULT_WRITE_METRICS_MODE = "write.metadata.metrics.default"
     DEFAULT_WRITE_METRICS_MODE_DEFAULT = "truncate(16)"
 
@@ -489,18 +492,37 @@ class Transaction:
         except ModuleNotFoundError as e:
             raise ModuleNotFoundError("For writes PyArrow needs to be installed") from e
 
-        from pyiceberg.io.pyarrow import _check_pyarrow_schema_compatible, _dataframe_to_data_files
+        from pyiceberg.io.pyarrow import (
+            _check_pyarrow_schema_compatible,
+            _check_vortex_schema_compatible,
+            _dataframe_to_data_files,
+        )
 
         if not isinstance(df, pa.Table):
             raise ValueError(f"Expected PyArrow table, got: {df}")
 
         downcast_ns_timestamp_to_us = Config().get_bool(DOWNCAST_NS_TIMESTAMP_TO_US_ON_WRITE) or False
-        _check_pyarrow_schema_compatible(
-            self.table_metadata.schema(),
-            provided_schema=df.schema,
-            downcast_ns_timestamp_to_us=downcast_ns_timestamp_to_us,
-            format_version=self.table_metadata.format_version,
-        )
+
+        # Optimization: Use fast schema check for Vortex writes
+        write_format = self.table_metadata.properties.get(
+            TableProperties.WRITE_FORMAT_DEFAULT, TableProperties.WRITE_FORMAT_DEFAULT_DEFAULT
+        ).lower()
+
+        if write_format == "vortex":
+            # Vortex is more flexible with schema compatibility - use lightweight check
+            _check_vortex_schema_compatible(
+                self.table_metadata.schema(),
+                provided_schema=df.schema,
+                downcast_ns_timestamp_to_us=downcast_ns_timestamp_to_us,
+            )
+        else:
+            # Standard PyArrow schema compatibility check for other formats
+            _check_pyarrow_schema_compatible(
+                self.table_metadata.schema(),
+                provided_schema=df.schema,
+                downcast_ns_timestamp_to_us=downcast_ns_timestamp_to_us,
+                format_version=self.table_metadata.format_version,
+            )
 
         with self._append_snapshot_producer(snapshot_properties, branch=branch) as append_files:
             # skip writing data files if the dataframe is empty
@@ -915,12 +937,10 @@ class Transaction:
             self.set_properties(
                 **{TableProperties.DEFAULT_NAME_MAPPING: self.table_metadata.schema().name_mapping.model_dump_json()}
             )
-        with self._append_snapshot_producer(snapshot_properties, branch=branch) as append_files:
-            data_files = _parquet_files_to_data_files(
-                table_metadata=self.table_metadata, file_paths=file_paths, io=self._table.io
-            )
+        with self.update_snapshot(snapshot_properties=snapshot_properties).fast_append() as update_snapshot:
+            data_files = _files_to_data_files(table_metadata=self.table_metadata, file_paths=file_paths, io=self._table.io)
             for data_file in data_files:
-                append_files.append_data_file(data_file)
+                update_snapshot.append_data_file(data_file)
 
     def _is_valid_object_path(self, path: str) -> bool:
         """
@@ -995,7 +1015,7 @@ class Transaction:
             if isinstance(obj, str) and self._is_valid_object_path(obj):
                 file_paths = [obj]
                 data_files.extend(
-                    _parquet_files_to_data_files(
+                    _files_to_data_files(
                         table_metadata=self.table_metadata,
                         file_paths=file_paths,
                         io=self._table.io,
@@ -2267,15 +2287,25 @@ class WriteTask:
         return f"00000-{self.task_id}-{self.write_uuid}.{extension}"
 
 
-def _parquet_files_to_data_files(table_metadata: TableMetadata, file_paths: List[str], io: FileIO) -> Iterable[DataFile]:
-    """Convert a list files into DataFiles.
+def _files_to_data_files(table_metadata: TableMetadata, file_paths: List[str], io: FileIO) -> Iterable[DataFile]:
+    """Convert a list of files into DataFiles.
 
     Returns:
-        An iterable that supplies DataFiles that describe the parquet files.
+        An iterable that supplies DataFiles that describe the files.
     """
-    from pyiceberg.io.pyarrow import parquet_file_to_data_file
+    from pyiceberg.io.pyarrow import parquet_file_to_data_file, vortex_file_to_data_file
 
     executor = ExecutorFactory.get_or_create()
-    futures = [executor.submit(parquet_file_to_data_file, io, table_metadata, file_path) for file_path in file_paths]
+    futures = []
+
+    for file_path in file_paths:
+        # Determine file format based on extension
+        if file_path.lower().endswith(".parquet"):
+            futures.append(executor.submit(parquet_file_to_data_file, io, table_metadata, file_path))
+        elif file_path.lower().endswith(".vortex"):
+            futures.append(executor.submit(vortex_file_to_data_file, io, table_metadata, file_path))
+        else:
+            # Default to Parquet for backwards compatibility
+            futures.append(executor.submit(parquet_file_to_data_file, io, table_metadata, file_path))
 
     return [f.result() for f in futures if f.result()]

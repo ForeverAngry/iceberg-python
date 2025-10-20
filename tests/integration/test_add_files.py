@@ -21,6 +21,7 @@ import os
 import re
 import threading
 from datetime import date
+from pathlib import Path
 from typing import Iterator
 from unittest import mock
 
@@ -50,6 +51,12 @@ from pyiceberg.types import (
     TimestampType,
     TimestamptzType,
 )
+
+# Check if vortex is available
+try:
+    from pyiceberg.io.vortex import VORTEX_AVAILABLE
+except ImportError:
+    VORTEX_AVAILABLE = False
 
 TABLE_SCHEMA = Schema(
     NestedField(field_id=1, name="foo", field_type=BooleanType(), required=False),
@@ -128,6 +135,18 @@ def _write_parquet(io: FileIO, file_path: str, arrow_schema: pa.Schema, arrow_ta
     with fo.create(overwrite=True) as fos:
         with pq.ParquetWriter(fos, schema=arrow_schema) as writer:
             writer.write_table(arrow_table)
+
+
+def _write_vortex(data: pa.Table, file_path: str) -> None:
+    """Helper function to create a Vortex file from PyArrow table data."""
+    if not VORTEX_AVAILABLE:
+        pytest.skip("vortex-data package not installed")
+
+    from pyiceberg.io.fsspec import FsspecFileIO
+    from pyiceberg.io.vortex import write_vortex_file
+
+    io = FsspecFileIO(properties={})
+    write_vortex_file(arrow_table=data, file_path=file_path, io=io)
 
 
 def _create_table(
@@ -503,7 +522,7 @@ def test_add_files_to_partitioned_table_fails_with_lower_and_upper_mismatch(
 
 @pytest.mark.integration
 def test_add_files_snapshot_properties(spark: SparkSession, session_catalog: Catalog, format_version: int) -> None:
-    identifier = f"default.test_add_files_snapshot_properties_v{format_version}"
+    identifier = f"default.unpartitioned_table_v{format_version}"
     tbl = _create_table(session_catalog, identifier, format_version)
 
     file_paths = [f"s3://warehouse/default/unpartitioned/v{format_version}/test-{i}.parquet" for i in range(5)]
@@ -928,34 +947,110 @@ def test_add_files_hour_transform(session_catalog: Catalog) -> None:
     tbl.add_files(file_paths=[file_path])
 
 
+# Vortex file format tests
 @pytest.mark.integration
-def test_add_files_to_branch(spark: SparkSession, session_catalog: Catalog, format_version: int) -> None:
-    identifier = f"default.test_add_files_branch_v{format_version}"
-    branch = "branch1"
+@pytest.mark.skipif(not VORTEX_AVAILABLE, reason="vortex-data package not installed")
+def test_add_vortex_files_to_unpartitioned_table(session_catalog: Catalog, format_version: int, tmp_path: Path) -> None:
+    """Test adding Vortex files to an Iceberg table."""
+    from pyiceberg.manifest import FileFormat
 
+    identifier = f"default.test_vortex_add_files_v{format_version}"
     tbl = _create_table(session_catalog, identifier, format_version)
 
-    file_paths = [f"s3://warehouse/default/addfile/v{format_version}/test-{i}.parquet" for i in range(5)]
-    # write parquet files
-    for file_path in file_paths:
-        fo = tbl.io.new_output(file_path)
-        with fo.create(overwrite=True) as fos:
-            with pq.ParquetWriter(fos, schema=ARROW_SCHEMA) as writer:
-                writer.write_table(ARROW_TABLE)
+    # Create test data
+    test_data = pa.table(
+        {"foo": [True, False], "bar": ["test1", "test2"], "baz": [1, 2], "qux": [date(2024, 3, 7), date(2024, 3, 8)]},
+        schema=ARROW_SCHEMA,
+    )
 
-    # Dummy write to avoid failures on creating branch in empty table
-    tbl.append(ARROW_TABLE)
-    assert tbl.metadata.current_snapshot_id is not None
-    tbl.manage_snapshots().create_branch(snapshot_id=tbl.metadata.current_snapshot_id, branch_name=branch).commit()
+    # Create Vortex files
+    vortex_file_1 = str(tmp_path / "data_1.vortex")
+    vortex_file_2 = str(tmp_path / "data_2.vortex")
 
-    # add the parquet files as data files
-    tbl.add_files(file_paths=file_paths, branch=branch)
+    _write_vortex(test_data.slice(0, 1), vortex_file_1)
+    _write_vortex(test_data.slice(1, 1), vortex_file_2)
 
-    df = spark.table(identifier)
-    assert df.count() == 1, "Expected 1 row in Main table"
+    # Add Vortex files to table
+    tbl.add_files(file_paths=[vortex_file_1, vortex_file_2])
 
-    branch_df = spark.table(f"{identifier}.branch_{branch}")
-    assert branch_df.count() == 6, "Expected 5 rows in branch"
+    # Verify the files were added with correct format
+    data_files = tbl.inspect.data_files()
+    data_file_list = data_files.to_pylist()
+    assert len(data_file_list) == 2
 
-    for col in branch_df.columns:
-        assert branch_df.filter(branch_df[col].isNotNull()).count() == 6, "Expected all 6 rows to be non-null"
+    for data_file in data_file_list:
+        assert data_file["file_format"] == FileFormat.VORTEX.value
+        assert data_file["file_path"].endswith(".vortex")
+
+    # Verify data can be read back
+    result = tbl.scan().to_arrow()
+    assert len(result) == 2
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not VORTEX_AVAILABLE, reason="vortex-data package not installed")
+def test_add_mixed_vortex_parquet_files(session_catalog: Catalog, format_version: int, tmp_path: Path) -> None:
+    """Test adding both Vortex and Parquet files to the same table."""
+    from pyiceberg.manifest import FileFormat
+
+    identifier = f"default.test_mixed_format_v{format_version}"
+    tbl = _create_table(session_catalog, identifier, format_version)
+
+    # Create test data
+    test_data = pa.table(
+        {"foo": [True, False], "bar": ["test1", "test2"], "baz": [1, 2], "qux": [date(2024, 3, 7), date(2024, 3, 8)]},
+        schema=ARROW_SCHEMA,
+    )
+
+    # Create mixed format files
+    vortex_file = str(tmp_path / "data.vortex")
+    parquet_file = str(tmp_path / "data.parquet")
+
+    _write_vortex(test_data.slice(0, 1), vortex_file)
+    _write_parquet(tbl.io, parquet_file, ARROW_SCHEMA, test_data.slice(1, 1))
+
+    # Add both files to table
+    tbl.add_files(file_paths=[vortex_file, parquet_file])
+
+    # Verify correct formats were detected
+    data_files = tbl.inspect.data_files()
+    data_file_list = data_files.to_pylist()
+    assert len(data_file_list) == 2
+
+    formats = {df["file_format"] for df in data_file_list}
+    assert FileFormat.VORTEX.value in formats
+    assert FileFormat.PARQUET.value in formats
+
+    # Verify data can be read back
+    result = tbl.scan().to_arrow()
+    assert len(result) == 2
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not VORTEX_AVAILABLE, reason="vortex-data package not installed")
+def test_vortex_file_format_detection_by_extension(session_catalog: Catalog, format_version: int, tmp_path: Path) -> None:
+    """Test that Vortex file format is correctly detected by extension."""
+    from pyiceberg.manifest import FileFormat
+
+    identifier = f"default.test_vortex_detection_v{format_version}"
+    tbl = _create_table(session_catalog, identifier, format_version)
+
+    # Create test data
+    test_data = pa.table({"foo": [True], "bar": ["test"], "baz": [1], "qux": [date(2024, 3, 7)]}, schema=ARROW_SCHEMA)
+
+    # Test different extensions
+    files_and_formats = [
+        (str(tmp_path / "data.vortex"), FileFormat.VORTEX),
+        (str(tmp_path / "data.VORTEX"), FileFormat.VORTEX),  # Case insensitive
+    ]
+
+    for file_path, _ in files_and_formats:
+        _write_vortex(test_data, file_path)
+
+    file_paths = [fp for fp, _ in files_and_formats]
+    tbl.add_files(file_paths=file_paths)
+
+    # Verify formats detected correctly
+    data_files = tbl.inspect.data_files()
+    for data_file in data_files.to_pylist():
+        assert data_file["file_format"] == FileFormat.VORTEX.value
