@@ -1978,10 +1978,6 @@ class UnpartitionedResidualEvaluator(ResidualEvaluator):
         return self.expr
 
 
-# =============================================================================
-# ADD THESE BEFORE THE ResidualEvaluator CLASS DEFINITION
-# =============================================================================
-
 _DEFAULT_RESIDUAL_EVALUATOR_CACHE_SIZE = 128
 
 
