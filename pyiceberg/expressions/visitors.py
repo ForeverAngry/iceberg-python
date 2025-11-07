@@ -25,7 +25,6 @@ from typing import (
     Dict,
     Generic,
     List,
-    Optional,
     Set,
     SupportsFloat,
     Tuple,
@@ -2008,7 +2007,7 @@ class ResidualEvaluatorCache:
         spec_id: int,
         expr: BooleanExpression,
         case_sensitive: bool,
-        schema_id: Optional[int] = None,
+        schema_id: int | None = None,
     ) -> str:
         """Create deterministic cache key from evaluator parameters.
 
@@ -2030,7 +2029,7 @@ class ResidualEvaluatorCache:
         expr: BooleanExpression,
         case_sensitive: bool,
         schema: Schema,
-    ) -> Optional[ResidualEvaluator]:
+    ) -> ResidualEvaluator | None:
         """Retrieve cached evaluator if it exists.
 
         Args:
